@@ -22,6 +22,12 @@ export class PostController {
   constructor(private postService: PostService) {}
 
 
+  @Get("hello")
+  sayHello() {
+    return {message: "Hello World!!!!"}
+  }
+
+
   @Post('create')
   CreatePost(@Body() body: CreatePostDto) {
     return this.postService.createPost(body);

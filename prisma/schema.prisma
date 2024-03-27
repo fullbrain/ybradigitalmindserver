@@ -10,16 +10,157 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Post {
-  id              Int       @id   @default(autoincrement())
-  createdAt       DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+enum Role {
+  USER
+  ADMIN
+}
 
-  title           String          @unique
-  slug            String          @unique
-  excerpt   	    String
-  text            String
-  image           String?
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  username  String?
+  firstname String?
+  lastname  String?
+  email     String   @unique
+  hash      String
+  role      Role     @default(USER)
+
+  posts    Post[]
+  projects Project[]
+  events   Event[]
+  Review   Review[]
+
+  @@map("users")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  title     String   @unique
+  slug      String   @unique
+  excerpt   String
+  text      String
+  image     String?
+  published Boolean  @default(false)
+
+  categoriesOnPost Post_Category[]
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
 
   @@map("posts")
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  name String @unique
+  slug String @unique
+
+  posts Post_Category[]
+
+  @@map("categories")
+}
+
+model Post_Category {
+  post_id Int
+  post    Post @relation(fields: [post_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  category_id Int
+  categories  Category @relation(fields: [category_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([post_id, category_id])
+  @@map("post_category")
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  createAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  start_date  DateTime
+  end_date    DateTime
+  name        String   @unique
+  slug        String   @unique
+  description String
+  image       String
+  location    String?
+  published   Boolean  @default(false)
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+
+  @@map("events")
+}
+
+model Project {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String   @unique
+  slug        String   @unique
+  description String
+  client      String?
+  image       String[]
+  published   Boolean  @default(false)
+  user_id     Int
+  user        User     @relation(fields: [user_id], references: [id])
+  Review      Review[]
+
+  customer_id Int
+  customer    Customer @relation(fields: [customer_id], references: [id])
+
+  @@map("projects")
+}
+
+model Review {
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user_id   Int
+  user      User     @relation(fields: [user_id], references: [id])
+  published Boolean  @default(false)
+
+  project_id Int
+  project    Project @relation(fields: [project_id], references: [id])
+
+  comment String
+  rating  Int
+
+  @@id([user_id, project_id])
+  @@map("reviews")
+}
+
+model Customer {
+  id              Int       @id @default(autoincrement())
+  organisation    String    @unique
+  country         String
+  city            String
+  industry_sector String
+  logo            String
+  project         Project[]
+
+  @@map("customers")
+}
+
+model Team {
+  id        Int     @id @default(autoincrement())
+  firstname String  
+  lastname  String
+  image     String
+  bio       String
+  job_id    Int
+  job       Job    @relation(fields: [job_id], references: [id])
+
+  @@map("teams")
+}
+
+model Job {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  name      String   @unique
+  team      Team[]   @relation
+
+  @@map("jobs")
 }
