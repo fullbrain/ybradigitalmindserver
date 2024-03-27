@@ -10,7 +10,7 @@ async function bootstrap() {
     // {whitelist: true}
   );
   app.setGlobalPrefix('api/v1');
-  // app.enableCors();
+  app.enableCors();
   await app.listen(5000);
 }
 bootstrap();
