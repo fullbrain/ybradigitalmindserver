@@ -96,6 +96,28 @@ export class PostService {
     return response;
   }
 
+  async findOneBySlug(slug: string){
+    try{
+      const response = await this.prisma.post.findUnique({
+        where: {
+          slug: slug
+        },
+        include: {
+          categoriesOnPost: {
+            select: {
+              categories: true
+            }
+          },
+          user: true,
+        },
+      })
+
+      return response;
+    }catch(err){
+      console.log("Error while loading the post by slug: ", err)
+    }
+  }
+
   
 
   async updatePost(id: number, updatePostDto: Partial<CreatePostDto>) {    

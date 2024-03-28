@@ -53,6 +53,11 @@ export class PostController {
     return this.postService.findOne(id);
   }
 
+  @Get('getbyslug/:slug')
+  fineOneBySlug(@Param('slug') slug: string){
+    return this.postService.findOneBySlug(slug)
+  }
+
 
   @Patch('updatepost/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
