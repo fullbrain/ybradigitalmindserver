@@ -32,6 +32,17 @@ export class EventsService {
     }
   }
 
+  async findBySlug(slug: string) {
+    try{
+      const response = await this.prisma.event.findUnique({where: {slug}});
+
+      return response;
+      
+    } catch(err) {
+      console.log('ERROR HILE FETCHING THE EVENT BY SLUG: ', err);
+    }
+  }
+
   async createEvent(@Body() body: CreateEventDto) {
     try {
       const response = await this.prisma.event.create({

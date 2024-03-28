@@ -33,6 +33,11 @@ export class EventsController {
     return this.eventsService.findById(id);
   }
 
+  @Get('getonebyslug/:slug')
+  async findBySlug(@Param('slug') slug: string) {
+    return this.eventsService.findBySlug(slug)
+  }
+
   @Patch('update/:id')
   async updateById(
     @Param('id', ParseIntPipe) id: number,
