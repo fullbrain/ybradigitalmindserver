@@ -60,6 +60,25 @@ export class ProjectService {
     return response;
   }
 
+  async findOneBySlug( slug: string) {
+    try{
+      const response = await this.prisma.project.findUnique({where: {slug: slug}, include: {
+        Review: {
+          select: {
+            user: true,
+            comment: true,
+            rating: true,
+            user_id: true,
+            project_id: true
+          }
+        }
+      } });
+      return response;
+    } catch(err){
+      console.log("ERROR WHILE FETCHING THE PROJECT BY SLUG: ", err)
+    }
+  }
+
   async updateProject(id: number, updateProjectDto: Partial<Project>) {
     const response = await this.prisma.project.update({
       where: { id },

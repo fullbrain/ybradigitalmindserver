@@ -36,6 +36,11 @@ export class ProjectController {
     return this.projectService.findOne(id);
   }
 
+  @Get('getbyslug/:slug')
+  findOneBySlug(@Param('slug') slug: string) {
+    return this.projectService.findOneBySlug(slug);
+  }
+
   @Patch('update/:id')
   updateProject(@Param('id', ParseIntPipe) id: number, @Body() body: any) {
     return this.projectService.updateProject(id, body);
