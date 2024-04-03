@@ -9,11 +9,14 @@ export class NewsletterService {
 
     async addNewsletteremail(email: string){
         try{
+
             const response = await this.prismaService.newsletter.create({
                 data: {
                     email
                 }
             })
+
+            console.log("THIS IS THE RESPONSE: ", response)
 
         }catch(err){
             if( err instanceof PrismaClientKnownRequestError ){
