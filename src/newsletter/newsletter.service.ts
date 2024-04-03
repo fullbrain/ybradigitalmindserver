@@ -15,11 +15,7 @@ export class NewsletterService {
                 }
             })
 
-            console.log("RESPONSE: ", response);
-
         }catch(err){
-
-            console.log("ERROR WHILE ADDING NEWSLETTER: ", err)
             if( err instanceof PrismaClientKnownRequestError ){
                 if( err.message.includes("Unique constraint failed on the fields") ){
                     throw new ConflictException("L'adresse e-mail que vous avez saisie est déjà abonnée à notre newsletter.")
