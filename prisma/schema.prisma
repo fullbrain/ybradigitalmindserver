@@ -164,3 +164,15 @@ model Job {
 
   @@map("jobs")
 }
+
+
+model Newsletter {
+  id        Int       @id @default(autoincrement())
+  createdAt DateTime  @default(now())
+
+  email     String    @unique
+  fullname  String?    
+
+  category  String?
+
+}

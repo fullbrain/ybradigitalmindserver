@@ -12,6 +12,7 @@ import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { ProjectModule } from './projects/project.module';
 import { categoryModule } from './category/category.module';
+import { NewsletterModule } from './newsletter/newsletter.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { categoryModule } from './category/category.module';
     CustomerModule,
     JobModule,
     categoryModule,
+    NewsletterModule,
   ],
   controllers: [],
   providers: [],
