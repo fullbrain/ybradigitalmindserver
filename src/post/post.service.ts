@@ -42,6 +42,16 @@ export class PostService {
     }
   }
 
+  async getCount(){
+    const publishedCount = await this.prisma.post.count();
+    const unpublishedCount = await this.prisma.post.count({
+      where: {
+        published: false
+      }
+    })
+    return { publishedCount, unpublishedCount }
+  }
+
   async getPostsInCategory(categoryId: number) {
     return this.prisma.post.findMany({
       where: {

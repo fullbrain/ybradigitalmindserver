@@ -1,23 +1,44 @@
 import { ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AddNewsletter } from './dto';
+import { $Enums } from '@prisma/client';
 
 @Injectable()
 export class NewsletterService {
 
     constructor(private prismaService: PrismaService){}
 
-    async addNewsletteremail(email: string){
-        try{
 
+    async getAllEmails() {
+        try{
+            const response = await this.prismaService.newsletter.findMany();
+
+            return response;
+        }catch(err){
+            console.log("ERROR WHILE FETCHING THE EMAILS: ", err)
+        }
+    }
+
+    async addNewsletteremail(dto: AddNewsletter){
+
+        const priorities = {
+            "HIGH": $Enums.Priority.HIGH,
+            "MEDIUM": $Enums.Priority.MEDIUM,
+            "LOW": $Enums.Priority.LOW
+        }
+
+
+        try{
             const response = await this.prismaService.newsletter.create({
                 data: {
-                    email
+                    email: dto.email,
+                    fullname: dto.fullname,
+                    priority: priorities[dto.Priority]
                 }
             })
 
-            console.log("THIS IS THE RESPONSE: ", response)
-
+            return response;
         }catch(err){
             if( err instanceof PrismaClientKnownRequestError ){
                 if( err.message.includes("Unique constraint failed on the fields") ){
@@ -26,8 +47,6 @@ export class NewsletterService {
             } else {
                 console.log("ERROR WHILE ADDING NEWSLETTER: ", err)
             }
-
-
         }
     }
 

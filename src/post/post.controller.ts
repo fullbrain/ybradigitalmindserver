@@ -21,13 +21,6 @@ const POSTS_LIMIT = 8;
 export class PostController {
   constructor(private postService: PostService) {}
 
-
-  @Get("hello")
-  sayHello() {
-    return {message: "Hello World!!!!"}
-  }
-
-
   @Post('create')
   CreatePost(@Body() body: CreatePostDto) {
     return this.postService.createPost(body);
@@ -36,6 +29,11 @@ export class PostController {
 
   createPost(@Body() body: CreatePostDto) {
     return this.postService.createPost(body);
+  }
+
+  @Get('getcount')
+  getCount(){
+    return this.postService.getCount();
   }
 
 

@@ -15,6 +15,12 @@ enum Role {
   ADMIN
 }
 
+enum Priority {
+  HIGH
+  MEDIUM
+  LOW
+}
+
 model User {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
@@ -171,8 +177,9 @@ model Newsletter {
   createdAt DateTime  @default(now())
 
   email     String    @unique
-  fullname  String?    
+  fullname  String?
 
+  priority  Priority    @default(MEDIUM)
   category  String?
 
 }
