@@ -11,17 +11,17 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 @Injectable({})
 export class PostService {
   constructor(private prisma: PrismaService) {}
-  async createPost(dto: CreatePostDto) {
+  async createPost(dto: any, filename: string) {
     try {
       const multipleQueries = this.generateQuery(dto.categories);
-
+      
       const response = await this.prisma.post.create({
         data: {
           title: dto.title,
           slug: dto.slug,
           excerpt: dto.excerpt,
           text: dto.text,
-          image: dto.image,
+          image: filename,
           published: dto.published,
           user: { connect: { id: dto.user_id } },
           categoriesOnPost: {
@@ -30,6 +30,8 @@ export class PostService {
         },
       });
 
+      console.log("THE RESPONSE: ", response);
+
       return response;
     } catch (err) {
       if (err instanceof PrismaClientKnownRequestError) {
@@ -37,7 +39,11 @@ export class PostService {
           throw new ForbiddenException(
             'Un article avec le même titre existe déjà. Veuillez choisir un titre unique pour votre publication.',
           );
+        } else {
+          throw new Error(err.message)
         }
+      } else {
+        throw new Error(err);
       }
     }
   }
@@ -65,9 +71,8 @@ export class PostService {
   }
 
   async getPosts(limit?: number) {
-    const response = this.prisma.post.findMany({
+    const response = await this.prisma.post.findMany({
       take: limit ? limit : 8,
-      
       include: {
         categoriesOnPost: {
           select: {
@@ -87,6 +92,10 @@ export class PostService {
         },
       },
     });
+
+
+    console.log("RESPONSE: ", response);
+
     return response;
   }
 
@@ -213,8 +222,9 @@ export class PostService {
 
 
   generateQuery(categories: Category[]) {
+
     const multipleQueries = categories
-      ? categories.map((category) => ({
+      ? (categories).map((category) => ({
           categories: {
             connectOrCreate: {
               where: { slug: category.slug },
@@ -226,6 +236,8 @@ export class PostService {
           },
         }))
       : [];
+
+
     return multipleQueries;
   }
 

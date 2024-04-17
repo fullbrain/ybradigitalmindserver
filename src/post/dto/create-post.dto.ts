@@ -1,5 +1,6 @@
 import { Category } from '@prisma/client';
-import { IsBoolean, IsNotEmpty, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreatePostDto {
   id: number;
@@ -26,11 +27,17 @@ export class CreatePostDto {
   @IsString()
   image: string;
 
+  imagefile: string;
+
   @IsNotEmpty()
   @IsBoolean()
+  @Transform(({value}) => Boolean(value))
   published: boolean;
 
+  @IsNumber()
+  @Transform(({value}) => Number(value))
   user_id: number;
 
+  @Transform(({value}) => JSON.parse(value))
   categories: Category[];
 }

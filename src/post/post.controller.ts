@@ -11,25 +11,37 @@ import {
   NotFoundException,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { MinioService } from 'src/minio/minio.service';
+import { PostValidationPipe } from './pipes/postValidation.pipe';
 
 const POSTS_LIMIT = 8;
 
 @Controller('post')
 export class PostController {
-  constructor(private postService: PostService) {}
+  constructor(private postService: PostService, private readonly minioService: MinioService) {}
 
   @Post('create')
-  CreatePost(@Body() body: CreatePostDto) {
-    return this.postService.createPost(body);
+  @UsePipes(new ValidationPipe({transform: true}))
+  @UseInterceptors(FileInterceptor('imagefile'))
+  async CreatePost(@Body() body: CreatePostDto, @UploadedFile() imageFile) {
+    await this.minioService.createBucketIfNotExists();
+    const filename = await this.minioService.uploadFile(imageFile);
+
+    return this.postService.createPost(body, filename);
   }
 
 
-  createPost(@Body() body: CreatePostDto) {
-    return this.postService.createPost(body);
-  }
+  // createPost(@Body() body: CreatePostDto) {
+  //   return this.postService.createPost(body);
+  // }
 
   @Get('getcount')
   getCount(){

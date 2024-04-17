@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { ProjectModule } from './projects/project.module';
 import { categoryModule } from './category/category.module';
 import { NewsletterModule } from './newsletter/newsletter.module';
+import { MinioService } from './minio/minio.service';
+import { MinioModule } from './minio/minio.module';
 
 @Module({
   imports: [
@@ -31,8 +33,9 @@ import { NewsletterModule } from './newsletter/newsletter.module';
     JobModule,
     categoryModule,
     NewsletterModule,
+    MinioModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [MinioService],
 })
 export class AppModule {}

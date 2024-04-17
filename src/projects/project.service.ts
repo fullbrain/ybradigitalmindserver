@@ -34,7 +34,7 @@ export class ProjectService {
             'Le titre du projet ne doit pas être identique à un autre titre déjà existant.',
           );
         } else {
-          throw new Error('Erreur');
+          throw new Error("ERREUR: " + err.message);
         }
       } else if (err instanceof PrismaClientValidationError) {
         if (err.message.includes('Argument `image`: Invalid value provided.')) {
