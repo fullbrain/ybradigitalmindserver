@@ -7,10 +7,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto';
 import { Category, Post } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { MinioService } from 'src/minio/minio.service';
 
 @Injectable({})
 export class PostService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private readonly minioService: MinioService) {}
+
+
   async createPost(dto: any, filename: string) {
     try {
       const multipleQueries = this.generateQuery(dto.categories);
@@ -71,36 +74,48 @@ export class PostService {
   }
 
   async getPosts(limit?: number) {
-    const response = await this.prisma.post.findMany({
-      take: limit ? limit : 8,
-      include: {
-        categoriesOnPost: {
-          select: {
-            categories: {
-              select: {
-                name: true,
-                slug: true
+    try{
+      const response = await this.prisma.post.findMany({
+        take: limit ? limit : 8,
+        include: {
+          categoriesOnPost: {
+            select: {
+              categories: {
+                select: {
+                  name: true,
+                  slug: true
+                }
               }
             }
-          }
-        },
-        user: {
-          select: {
-            username: true,
-            email: true,
+          },
+          user: {
+            select: {
+              username: true,
+              email: true,
+            },
           },
         },
-      },
-    });
+      });
+  
 
-
-    console.log("RESPONSE: ", response);
-
-    return response;
+      const filteredResponse = await Promise.all(response.map(async (thepost) => {
+        const imageURL = await this.minioService.getFileUrl(thepost.image);
+        return {
+          ...thepost,
+          image: imageURL
+        };
+      }));
+  
+      console.log("FILTERED RESPONSE: ", filteredResponse);
+  
+      return filteredResponse;
+    } catch(err){
+      console.log("AN ERROR OCCURED WHILE FETCHING THE POSTS: ", err)
+    }
   }
 
   async findOne(id: number) {
-    const response = this.prisma.post.findUnique({
+    const response = await this.prisma.post.findUnique({
       where: { id },
       include: {
         categoriesOnPost: {
@@ -111,6 +126,8 @@ export class PostService {
         user: true,
       },
     });
+
+    response.image = await this.minioService.getFileUrl(response.image)
 
     return response;
   }
@@ -130,6 +147,8 @@ export class PostService {
           user: true,
         },
       })
+
+      response.image = await this.minioService.getFileUrl(response.image)
 
       return response;
     }catch(err){
