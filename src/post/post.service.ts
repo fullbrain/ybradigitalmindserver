@@ -54,9 +54,11 @@ export class PostService {
   async updatePost(id: number, updatePostDto: Partial<CreatePostDto>, filename?: string) {    
     try{
       const categories = updatePostDto.categories ? updatePostDto.categories.map(cat => ({category_id: cat.id})) : [] ;
-      
+
       if( filename ){
         updatePostDto.image = filename;
+      } else {
+        delete updatePostDto.image;
       }
 
       delete updatePostDto.categories;
