@@ -38,6 +38,10 @@ export class CreatePostDto {
   @Transform(({value}) => Number(value))
   user_id: number;
 
-  @Transform(({value}) => JSON.parse(value))
+  @Transform(({value}) => {
+    return JSON.parse(value)
+  })
   categories: Category[];
 }
+
+

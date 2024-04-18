@@ -20,7 +20,7 @@ import { PostService } from './post.service';
 import { CreatePostDto } from './dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MinioService } from 'src/minio/minio.service';
-import { PostValidationPipe } from './pipes/postValidation.pipe';
+import { ParseFormDataJsonPipe } from './pipes/postValidation.pipe';
 
 const POSTS_LIMIT = 8;
 
@@ -31,11 +31,30 @@ export class PostController {
   @Post('create')
   @UsePipes(new ValidationPipe({transform: true}))
   @UseInterceptors(FileInterceptor('imagefile'))
-  async CreatePost(@Body() body: CreatePostDto, @UploadedFile() imageFile) {
+  async CreatePost(@Body() body: CreatePostDto, @UploadedFile() imageFile: Express.Multer.File) {
     await this.minioService.createBucketIfNotExists();
     const filename = await this.minioService.uploadFile(imageFile);
 
     return this.postService.createPost(body, filename);
+  }
+
+  @Patch('updatepost/:id')
+  @UseInterceptors(FileInterceptor('imagefile'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @UsePipes(new ParseFormDataJsonPipe())
+  async updatePost(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: Partial<CreatePostDto>,
+    @UploadedFile() imageFile: Express.Multer.File
+  ) {
+    let filename: string | null = null;
+    
+    if( imageFile ){
+      await this.minioService.createBucketIfNotExists();
+      filename = await this.minioService.uploadFile(imageFile);
+    }
+
+    return this.postService.updatePost(id, body, filename);
   }
 
 
@@ -57,7 +76,6 @@ export class PostController {
     return this.postService.getPosts(_limit);
   }
 
-
   @Get('getone/:id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.postService.findOne(id);
@@ -67,17 +85,6 @@ export class PostController {
   fineOneBySlug(@Param('slug') slug: string){
     return this.postService.findOneBySlug(slug)
   }
-
-
-  @Patch('updatepost/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  updatePost(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: Partial<CreatePostDto>,
-  ) {
-    return this.postService.updatePost(id, body);
-  }
-
 
   @Delete('deletepost/:id')
   deletePost(@Param('id', ParseIntPipe) id: number) {

@@ -51,6 +51,35 @@ export class PostService {
     }
   }
 
+  async updatePost(id: number, updatePostDto: Partial<CreatePostDto>, filename?: string) {    
+    try{
+      const categories = updatePostDto.categories ? updatePostDto.categories.map(cat => ({category_id: cat.id})) : [] ;
+      
+      if( filename ){
+        updatePostDto.image = filename;
+      }
+
+      delete updatePostDto.categories;
+      delete updatePostDto.imagefile
+  
+      const response = await this.prisma.post.update({
+        where: {id: id},
+        data: {...updatePostDto, categoriesOnPost: {
+          deleteMany: {},
+          createMany: {
+            data: categories
+          }
+        }}
+      })
+  
+      return {status: "success", post: response};
+    } catch(err){
+      console.log("ERROR WHILE UPDATING THE POST: ", err)
+    }
+
+  }
+
+
   async getCount(){
     const publishedCount = await this.prisma.post.count();
     const unpublishedCount = await this.prisma.post.count({
@@ -105,9 +134,7 @@ export class PostService {
           image: imageURL
         };
       }));
-  
-      console.log("FILTERED RESPONSE: ", filteredResponse);
-  
+    
       return filteredResponse;
     } catch(err){
       console.log("AN ERROR OCCURED WHILE FETCHING THE POSTS: ", err)
@@ -154,33 +181,6 @@ export class PostService {
     }catch(err){
       console.log("Error while loading the post by slug: ", err)
     }
-  }
-
-  
-
-  async updatePost(id: number, updatePostDto: Partial<CreatePostDto>) {    
-
-    try{
-      const categories = updatePostDto.categories ? updatePostDto.categories.map(cat => ({category_id: cat.id})) : [] ;
-      console.log("UPDATE POST DTO: ", categories);
-  
-      delete updatePostDto.categories;
-  
-      const response = await this.prisma.post.update({
-        where: {id: id},
-        data: {...updatePostDto, categoriesOnPost: {
-          deleteMany: {},
-          createMany: {
-            data: categories
-          }
-        }}
-      })
-  
-      return {status: "success", post: response};
-    } catch(err){
-      console.log("ERROR WHILE UPDATING THE POST: ", err)
-    }
-
   }
 
 
