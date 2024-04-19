@@ -4,13 +4,14 @@ import { Body, ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { MinioService } from 'src/minio/minio.service';
 
 @Injectable()
 export class EventsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService, private readonly minioService: MinioService) {}
 
   async findAll() {
-    return this.prisma.event.findMany({
+    const fetchedEvents = await this.prisma.event.findMany({
       include: {
         user: {
           select: {
@@ -18,13 +19,31 @@ export class EventsService {
             email: true ,
           }
         }
+      },
+      orderBy: {
+        createAt: "desc"
       }
     })
+
+    const filteredEvents = await Promise.all(fetchedEvents.map(async (event) => {
+      const imageURL = await this.minioService.getFileUrl(event.image);
+
+      return {
+        ...event,
+        image: imageURL
+      }
+
+    }))
+
+    return filteredEvents;
   }
 
   async findById(id: number) {
     try {
       const response = await this.prisma.event.findUnique({ where: { id } });
+
+      response.image = await this.minioService.getFileUrl(response.image)
+
 
       return response;
     } catch (err) {
@@ -36,6 +55,8 @@ export class EventsService {
     try{
       const response = await this.prisma.event.findUnique({where: {slug}});
 
+      response.image = await this.minioService.getFileUrl(response.image)
+
       return response;
       
     } catch(err) {
@@ -43,16 +64,15 @@ export class EventsService {
     }
   }
 
-  async createEvent(@Body() body: CreateEventDto) {
+  async createEvent(@Body() body: CreateEventDto, filename: string) {
     try {
       const response = await this.prisma.event.create({
         data: {
           name: body.name,
           description: body.description,
           slug: body.slug,
-          //image: body.image,
+          image: filename,
           location: body.location,
-          image: body.image ? body.image : '',
           start_date: new Date(),
           end_date: new Date(),
           user: { connect: { id: body.user_id } },
@@ -69,8 +89,15 @@ export class EventsService {
     }
   }
 
-  async update(id: number, data: Partial<CreateEventDto>) {
+  async update(id: number, data: Partial<CreateEventDto>, filename?: string) {
     try {
+
+      if( filename ){
+        data.image = filename
+      } else {
+        delete data.image
+      }
+
       const response = await this.prisma.event.update({
         where: { id },
         data,

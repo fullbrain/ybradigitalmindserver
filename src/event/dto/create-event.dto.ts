@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 export class CreateEventDto {
@@ -12,6 +13,7 @@ export class CreateEventDto {
   @IsNotEmpty()
   @IsString()
   name: string;
+
 
   @IsNotEmpty()
   @IsString()
@@ -30,5 +32,6 @@ export class CreateEventDto {
 
   @IsNumber()
   @IsNotEmpty()
+  @Transform(({value}) => Number(value))
   user_id: number;
 }

@@ -12,7 +12,6 @@ export class ParseFormDataJsonPipe implements PipeTransform {
   transform(value: any, _metadata: ArgumentMetadata) {
     if( _metadata.type === "body" ){
         if( typeof value === "object" ){
-            console.log("METADATA: ", _metadata)
             const except = this?.options?.except;
             const serializedValue = value;
             const originProperties = {};
@@ -20,6 +19,7 @@ export class ParseFormDataJsonPipe implements PipeTransform {
               _.merge(originProperties, _.pick(serializedValue, ...except));
             }
             const deserializedValue = deepParseJson(value);
+
             return deserializedValue;
         } else {
             return Number(value);

@@ -126,6 +126,9 @@ export class PostService {
             },
           },
         },
+        orderBy: {
+          createdAt: "desc"
+        }
       });
   
 
