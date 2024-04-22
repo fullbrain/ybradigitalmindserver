@@ -2,18 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create.team.dto';
 import { UpdateTeamDto } from './dto/update.team.dto';
+import { MinioService } from 'src/minio/minio.service';
 
 @Injectable({})
 export class TeamService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private readonly minioService: MinioService) {}
 
-  async createTeam(createTeamDto: CreateTeamDto) {
+  async createTeam(createTeamDto: CreateTeamDto, filename: string) {
     try{
       const create = await this.prisma.team.create({
         data: {
           firstname: createTeamDto.firstname,
           lastname: createTeamDto.lastname,
-          image: createTeamDto.image,
+          image: filename,
           bio: createTeamDto.bio,
           job: {
             connect: { id: createTeamDto.jobId },
@@ -41,7 +42,8 @@ export class TeamService {
 
 
 async findAllTeam(limit?:number) {
-    return this.prisma.team.findMany({ 
+
+  const members = await this.prisma.team.findMany({ 
     orderBy: {
       id: 'asc'
     },
@@ -54,6 +56,17 @@ async findAllTeam(limit?:number) {
         }
     },
   });
+
+  const fetchedMembers = await Promise.all(members.map(async (member) => {
+    const imageURL = await this.minioService.getFileUrl(member.image)
+    return {
+      ...member,
+      image: imageURL
+    }
+  }))
+
+
+  return fetchedMembers;
  
 
 }

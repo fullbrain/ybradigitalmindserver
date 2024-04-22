@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateTeamDto {
@@ -19,5 +20,6 @@ export class CreateTeamDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Transform(({value}) => Number(value))
   jobId: number;
 }
