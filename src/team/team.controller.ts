@@ -37,7 +37,7 @@ export class TeamController {
   @UsePipes(new ValidationPipe({transform: true}))
   @UsePipes(new ParseTeamFormDataJSONPipe())
   @UseInterceptors(FileInterceptor('avatar'))
-  update(@Param('id', ParseIntPipe) id: number ,@Body() updateteamdto: Partial<UpdateTeamDto>, @UploadedFile() avatar: Expre) {
+  update(@Param('id', ParseIntPipe) id: number ,@Body() updateteamdto: Partial<UpdateTeamDto>, @UploadedFile() avatar: Express.Multer.File) {
      console.log("THE ID: ", id)
      console.log("THE TYPE OF THE ID: ", typeof id)
     // return;
