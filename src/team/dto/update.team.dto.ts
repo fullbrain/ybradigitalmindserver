@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {  IsOptional, IsString, IsNumber } from 'class-validator';
 
 
@@ -23,5 +24,6 @@ export class UpdateTeamDto {
 
   @IsOptional()
   @IsNumber()
+  @Transform(({value}) => Number(value))
   jobId?: number;
 }

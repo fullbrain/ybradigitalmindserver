@@ -3,6 +3,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateTeamDto } from './dto/create.team.dto';
 import { UpdateTeamDto } from './dto/update.team.dto';
 import { MinioService } from 'src/minio/minio.service';
+import { Team } from '@prisma/client';
 
 @Injectable({})
 export class TeamService {
@@ -28,7 +29,8 @@ export class TeamService {
     }
   }
   async findByIdTeam(id: number) {
-    return this.prisma.team.findUnique({
+
+    const response = await this.prisma.team.findUnique({
       where: { id },
       include: {
         job: {
@@ -38,6 +40,10 @@ export class TeamService {
         },
       },
     });
+
+    response.image = await this.minioService.getFileUrl(response.image);
+
+    return response;
   }
 
 
@@ -72,14 +78,14 @@ async findAllTeam(limit?:number) {
 }
   
   
- async updateTeam(id: number, dto: UpdateTeamDto) {
+ async updateTeam(id: number, dto: UpdateTeamDto, filename: string) {
 
   const reponse = this.prisma.team.update({
     where: { id },
     data: {
       firstname:dto.firstname,
       lastname:dto.lastname,
-      image:dto.image,
+      image:filename,
       bio:dto.bio,
       job: { connect: { id: dto.jobId } } 
     }
