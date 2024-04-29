@@ -22,7 +22,6 @@ export class TeamController {
       await this.minioService.createBucketIfNotExists();
       const filename = await this.minioService.uploadFile(avatar);
 
-
       return this.teamService.createTeam(body, filename);
   }
 
